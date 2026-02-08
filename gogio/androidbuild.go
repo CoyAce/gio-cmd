@@ -54,21 +54,25 @@ type manifestData struct {
 
 const (
 	themes = `<?xml version="1.0" encoding="utf-8"?>
-<resources>
-	<style name="Theme.GioApp" parent="android:style/Theme.NoTitleBar">
-		<item name="android:windowBackground">@android:color/white</item>
-	</style>
-</resources>`
+	<resources>
+		<style name="Theme.GioApp" parent="android:style/Theme.NoTitleBar">
+			<item name="android:windowBackground">@android:color/white</item>
+		</style>
+	</resources>`
 	themesV21 = `<?xml version="1.0" encoding="utf-8"?>
-<resources>
-	<style name="Theme.GioApp" parent="android:style/Theme.NoTitleBar">
-		<item name="android:windowBackground">@android:color/white</item>
+	<resources>
+		<style name="Theme.GioApp" parent="android:style/Theme.NoTitleBar">
+			<item name="android:windowBackground">@android:color/white</item>
 
-		<item name="android:windowDrawsSystemBarBackgrounds">true</item>
-		<item name="android:navigationBarColor">#40000000</item>
-		<item name="android:statusBarColor">#40000000</item>
-	</style>
-</resources>`
+			<item name="android:windowDrawsSystemBarBackgrounds">true</item>
+			<item name="android:navigationBarColor">#40000000</item>
+			<item name="android:statusBarColor">#40000000</item>
+		</style>
+	</resources>`
+	providerPath = `<?xml version="1.0" encoding="utf-8"?>
+	<paths>
+		<external-files-path name="files" path="." />
+	</paths> `
 )
 
 func init() {
@@ -383,7 +387,8 @@ func exeAndroid(tmpDir string, tools *androidTools, bi *buildInfo, extraJars, pe
 	valDir := filepath.Join(resDir, "values")
 	v21Dir := filepath.Join(resDir, "values-v21")
 	v26mipmapDir := filepath.Join(resDir, `mipmap-anydpi-v26`)
-	for _, dir := range []string{valDir, v21Dir, v26mipmapDir} {
+	xmlDir := filepath.Join(resDir, "xml")
+	for _, dir := range []string{valDir, v21Dir, v26mipmapDir, xmlDir} {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return err
 		}
@@ -422,6 +427,9 @@ func exeAndroid(tmpDir string, tools *androidTools, bi *buildInfo, extraJars, pe
 	if err != nil {
 		return err
 	}
+	if err = os.WriteFile(filepath.Join(xmlDir, "file_paths.xml"), []byte(providerPath), 0o660); err != nil {
+		return err
+	}
 	resZip := filepath.Join(tmpDir, "resources.zip")
 	aapt2 := filepath.Join(tools.buildtools, "aapt2")
 	_, err = runCmd(exec.Command(
@@ -450,43 +458,52 @@ func exeAndroid(tmpDir string, tools *androidTools, bi *buildInfo, extraJars, pe
 	}
 	tmpl, err := template.New("test").Parse(
 		`<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="{{.AppID}}"
-	android:versionCode="{{.Version.VersionCode}}"
-	android:versionName="{{.Version}}">
-	{{if .PackageQueries}}
- 	<queries>
-	    {{range .PackageQueries}}
-        <package android:name="{{.}}" />
-        {{end}}
-    </queries>
-	{{end}}
-	<uses-sdk android:minSdkVersion="{{.MinSDK}}" android:targetSdkVersion="{{.TargetSDK}}" />
-{{range .Permissions}}	<uses-permission android:name="{{.}}"/>
-{{end}}{{range .Features}}	<uses-feature android:{{.}} android:required="false"/>
-{{end}}	<application {{.IconSnip}} android:label="{{.AppName}}">
-		<activity android:name="org.gioui.GioActivity"
-			android:label="{{.AppName}}"
-			android:theme="@style/Theme.GioApp"
-			android:configChanges="screenSize|screenLayout|smallestScreenSize|orientation|keyboardHidden"
-			android:windowSoftInputMode="adjustResize"
-			android:launchMode="singleInstance"
-			android:exported="true">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-			{{range .Schemes}}
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW"></action>
-				<category android:name="android.intent.category.DEFAULT"></category>
-				<category android:name="android.intent.category.BROWSABLE"></category>
-				<data android:scheme="{{.}}"></data>
-			</intent-filter>
-			{{end}}
-		</activity>
-	</application>
-</manifest>`)
+			<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+				package="{{.AppID}}"
+				android:versionCode="{{.Version.VersionCode}}"
+				android:versionName="{{.Version}}">
+				{{if .PackageQueries}}
+				<queries>
+					{{range .PackageQueries}}
+					<package android:name="{{.}}" />
+					{{end}}
+				</queries>
+				{{end}}
+				<uses-sdk android:minSdkVersion="{{.MinSDK}}" android:targetSdkVersion="{{.TargetSDK}}" />
+			{{range .Permissions}}	<uses-permission android:name="{{.}}"/>
+			{{end}}{{range .Features}}	<uses-feature android:{{.}} android:required="false"/>
+			{{end}}	
+				<application {{.IconSnip}} android:label="{{.AppName}}">
+					<provider android:name="androidx.core.content.FileProvider"
+					android:authorities="{{.AppID}}.fileprovider"
+					android:exported="false"
+					android:grantUriPermissions="true">
+					<meta-data
+						android:name="android.support.FILE_PROVIDER_PATHS"
+						android:resource="@xml/file_paths" />
+					</provider>
+					<activity android:name="org.gioui.GioActivity"
+						android:label="{{.AppName}}"
+						android:theme="@style/Theme.GioApp"
+						android:configChanges="screenSize|screenLayout|smallestScreenSize|orientation|keyboardHidden"
+						android:windowSoftInputMode="adjustResize"
+						android:launchMode="singleInstance"
+						android:exported="true">
+						<intent-filter>
+							<action android:name="android.intent.action.MAIN" />
+							<category android:name="android.intent.category.LAUNCHER" />
+						</intent-filter>
+						{{range .Schemes}}
+						<intent-filter>
+							<action android:name="android.intent.action.VIEW"></action>
+							<category android:name="android.intent.category.DEFAULT"></category>
+							<category android:name="android.intent.category.BROWSABLE"></category>
+							<data android:scheme="{{.}}"></data>
+						</intent-filter>
+						{{end}}
+					</activity>
+				</application>
+			</manifest>`)
 	var manifestBuffer bytes.Buffer
 	if err := tmpl.Execute(&manifestBuffer, manifestSrc); err != nil {
 		return err
