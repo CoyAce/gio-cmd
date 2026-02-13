@@ -381,6 +381,39 @@ func buildInfoPlist(bi *buildInfo) string {
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Basic Network Permissions -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires access to the microphone for voice calls or audio recording.</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app requires access to your photo library for picking and saving photos</string>
+    
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+
+    <!-- Local Network Permissions (iOS 14+) -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>This app requires access to your local network to discover and connect to devices</string>
+    
+    <!-- Cellular Network Permissions -->
+    <key>NSVoIPNetworkUsageDescription</key>
+    <string>This app requires network access to maintain connections in the background</string>
+    
+    <!-- Background Network Tasks -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>processing</string>
+        <string>remote-notification</string>
+    </array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
