@@ -400,11 +400,11 @@ func exeAndroid(tmpDir string, tools *androidTools, bi *buildInfo, extraJars, pe
 			{path: filepath.Join("mipmap-xhdpi", "ic_launcher.png"), size: 96},
 			{path: filepath.Join("mipmap-xxhdpi", "ic_launcher.png"), size: 144},
 			{path: filepath.Join("mipmap-xxxhdpi", "ic_launcher.png"), size: 192},
-			{path: filepath.Join("mipmap-mdpi", "ic_launcher_adaptive.png"), size: 108},
-			{path: filepath.Join("mipmap-hdpi", "ic_launcher_adaptive.png"), size: 162},
-			{path: filepath.Join("mipmap-xhdpi", "ic_launcher_adaptive.png"), size: 216},
-			{path: filepath.Join("mipmap-xxhdpi", "ic_launcher_adaptive.png"), size: 324},
-			{path: filepath.Join("mipmap-xxxhdpi", "ic_launcher_adaptive.png"), size: 432},
+			{path: filepath.Join("mipmap-mdpi", "ic_launcher_adaptive.png"), size: 108, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
+			{path: filepath.Join("mipmap-hdpi", "ic_launcher_adaptive.png"), size: 162, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
+			{path: filepath.Join("mipmap-xhdpi", "ic_launcher_adaptive.png"), size: 216, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
+			{path: filepath.Join("mipmap-xxhdpi", "ic_launcher_adaptive.png"), size: 324, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
+			{path: filepath.Join("mipmap-xxxhdpi", "ic_launcher_adaptive.png"), size: 432, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
 		})
 		if err != nil {
 			return err

@@ -36,6 +36,8 @@ var (
 	extraLdflags  = flag.String("ldflags", "", "extra flags to the Go linker")
 	extraTags     = flag.String("tags", "", "extra tags to the Go tool")
 	iconPath      = flag.String("icon", "", "specify an icon for iOS and Android")
+	adaptive      = flag.Bool("adaptive", false, "add padding for iOS and Android icons (uses safe-ratio)")
+	safeRatio     = flag.Float64("safe-ratio", 66.0/108.0, "safe zone ratio for icon padding (Android: 66/108≈0.61, iOS: no fixed standard)")
 	signKey       = flag.String("signkey", "", "specify the path of the keystore (Android) or provisioning profile (macOS or iOS) for signing")
 	signPass      = flag.String("signpass", "", "specify the password to decrypt the signkey.")
 	notaryID      = flag.String("notaryid", "", "specify the apple id to use for notarization.")
@@ -181,9 +183,11 @@ var allArchs = map[string]arch{
 }
 
 type iconVariant struct {
-	path string
-	size int
-	fill bool
+	path      string
+	size      int
+	fill      bool
+	adaptive  bool
+	safeRatio float64
 }
 
 func buildIcons(baseDir, icon string, variants []iconVariant) error {
@@ -221,12 +225,33 @@ func buildIcons(baseDir, icon string, variants []iconVariant) error {
 
 func resizeIcon(v iconVariant, img image.Image) *image.NRGBA {
 	scaled := image.NewNRGBA(image.Rectangle{Max: image.Point{X: v.size, Y: v.size}})
+	// Fill background if needed.
 	op := draw.Src
 	if v.fill {
 		op = draw.Over
-		draw.Draw(scaled, scaled.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
+		draw.Draw(scaled, scaled.Bounds(), &image.Uniform{C: color.White}, image.Point{}, draw.Src)
 	}
-	draw.CatmullRom.Scale(scaled, scaled.Bounds(), img, img.Bounds(), op, nil)
+	if v.adaptive {
+		// Adaptive icon: needs padding to keep content within the 66x66 dp safe zone
+		// (total canvas is 108x108 dp)
+		// See https://developer.android.com/develop/ui/views/launch/icon_design_adaptive.
+		// safeRatio defaults to 66.0/108.0 (Android safe zone ratio) unless otherwise set.
+		safeSize := int(float64(v.size) * v.safeRatio)
+		padding := (v.size - safeSize) / 2
+
+		// Scale to safe zone.
+		safeImg := image.NewNRGBA(image.Rect(0, 0, safeSize, safeSize))
+		draw.CatmullRom.Scale(safeImg, safeImg.Bounds(), img, img.Bounds(), op, nil)
+
+		// Place in center.
+		draw.Draw(scaled,
+			image.Rect(padding, padding, padding+safeSize, padding+safeSize),
+			safeImg,
+			image.Point{},
+			draw.Over)
+	} else {
+		draw.CatmullRom.Scale(scaled, scaled.Bounds(), img, img.Bounds(), op, nil)
+	}
 
 	return scaled
 }

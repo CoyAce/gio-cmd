@@ -272,14 +272,14 @@ func iosIcons(bi *buildInfo, tmpDir, appDir, icon string) (string, error) {
 	}
 	appIcon := filepath.Join(assets, "AppIcon.appiconset")
 	err := buildIcons(appIcon, icon, []iconVariant{
-		{path: "ios_2x.png", size: 120},
-		{path: "ios_3x.png", size: 180},
-		{path: "ipad_1x.png", size: 76},
-		{path: "ipad_2x.png", size: 152},
-		{path: "ipad_4x.png", size: 228},
+		{path: "ios_2x.png", size: 120, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
+		{path: "ios_3x.png", size: 180, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
+		{path: "ipad_1x.png", size: 76, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
+		{path: "ipad_2x.png", size: 152, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
+		{path: "ipad_4x.png", size: 228, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
 		// The App Store icon is not allowed to contain
 		// transparent pixels.
-		{path: "ios_store.png", size: 1024, fill: true},
+		{path: "ios_store.png", size: 1024, fill: true, adaptive: bi.adaptive, safeRatio: bi.safeRatio},
 	})
 	if err != nil {
 		return "", err
