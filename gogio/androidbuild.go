@@ -906,13 +906,13 @@ func latestPlatform(sdk string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var bestVer int
+	var bestVer float64
 	var bestPlat string
 	for _, platform := range allPlats {
 		_, name := filepath.Split(platform)
 		// The glob above guarantees the "android-" prefix.
 		verStr := name[len("android-"):]
-		ver, err := strconv.Atoi(verStr)
+		ver, err := strconv.ParseFloat(verStr, 64)
 		if err != nil {
 			continue
 		}
