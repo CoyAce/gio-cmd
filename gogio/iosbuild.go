@@ -90,14 +90,14 @@ func buildIOS(tmpDir, target string, bi *buildInfo) error {
 				return err
 			}
 
-			p, err := filepath.Glob(filepath.Join(home, "Library", "MobileDevice", "Provisioning Profiles", "*.mobileprovision"))
+			p, err := filepath.Glob(filepath.Join(home, "Library", "Developer", "Xcode", "UserData", "Provisioning Profiles", "*.mobileprovision"))
 			if err != nil {
 				return err
 			}
 			provisions = p
 		}
 
-		if err := signApple(bi.appID, tmpDir, embedded, appDir, provisions); err != nil {
+		if err := signApple(bi.appID, tmpDir, embedded, appDir, provisions, bi.id); err != nil {
 			return err
 		}
 		return zipDir(out, tmpDir, "Payload")
@@ -107,7 +107,7 @@ func buildIOS(tmpDir, target string, bi *buildInfo) error {
 }
 
 // signApple is shared between iOS and macOS.
-func signApple(appID, tmpDir, embedded, app string, provisions []string) error {
+func signApple(appID, tmpDir, embedded, app string, provisions []string, id string) error {
 	provInfo := filepath.Join(tmpDir, "provision.plist")
 	var avail []string
 	for _, prov := range provisions {
@@ -167,6 +167,9 @@ func signApple(appID, tmpDir, embedded, app string, provisions []string) error {
 		}
 		identity := sha1.Sum(certDER)
 		idHex := hex.EncodeToString(identity[:])
+		if id != "" {
+			idHex = id
+		}
 		_, err = runCmd(exec.Command(
 			"codesign",
 			"--sign", idHex,

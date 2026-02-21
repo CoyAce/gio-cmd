@@ -35,6 +35,7 @@ type buildInfo struct {
 	packageQueries []string
 	adaptive       bool
 	safeRatio      float64
+	id             string
 }
 
 type Semver struct {
@@ -86,6 +87,7 @@ func newBuildInfo(pkgPath string) (*buildInfo, error) {
 		packageQueries: getCommaList(*pkgQueries),
 		adaptive:       *adaptive,
 		safeRatio:      *safeRatio,
+		id:             *signId,
 	}
 	return bi, nil
 }
