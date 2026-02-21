@@ -39,6 +39,7 @@ var (
 	adaptive      = flag.Bool("adaptive", false, "add padding for iOS and Android icons (uses safe-ratio)")
 	safeRatio     = flag.Float64("safe-ratio", 66.0/108.0, "safe zone ratio for icon padding (Android: 66/108≈0.61, iOS: no fixed standard)")
 	signKey       = flag.String("signkey", "", "specify the path of the keystore (Android) or provisioning profile (macOS or iOS) for signing")
+	signId        = flag.String("signid", "", "specify the identity of iOS sign")
 	signPass      = flag.String("signpass", "", "specify the password to decrypt the signkey.")
 	notaryID      = flag.String("notaryid", "", "specify the apple id to use for notarization.")
 	notaryPass    = flag.String("notarypass", "", "specify app-specific password of the Apple ID to be used for notarization.")
