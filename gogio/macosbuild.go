@@ -139,6 +139,14 @@ func (b *macBuilder) setInfo(buildInfo *buildInfo, name string) {
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires access to the microphone for voice calls or audio recording.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app requires access to your camera for video calls or taking photos</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>This app requires access to your local network to discover and connect to devices</string>
+	<key>NSVoIPNetworkUsageDescription</key>
+	<string>This app requires network access to maintain connections in the background</string>
 	<key>CFBundleExecutable</key>
 	<string>{{.Name}}</string>
 	<key>CFBundleIconFile</key>
